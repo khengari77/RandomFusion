@@ -23,6 +23,10 @@ venv.bak/
 *.swp
 *.swo
 
+# Project specific
+ProjectPlan.md
+
+
 # OS specific
 .DS_Store
 Thumbs.db

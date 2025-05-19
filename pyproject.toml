@@ -17,3 +17,6 @@ pytest = "^8.3.5"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+randomfusion = "randomfusion.cli:cli"
