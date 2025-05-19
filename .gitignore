@@ -1,3 +1,6 @@
+# Project specific
+ProjectPlan.md
+
 # Poetry
 .poetry/
 poetry.lock # Often committed, but some prefer to ignore if all devs use `poetry install`
@@ -23,10 +26,17 @@ venv.bak/
 *.swp
 *.swo
 
-# Project specific
-ProjectPlan.md
-
-
 # OS specific
 .DS_Store
 Thumbs.db
+
+# RandomFusion Specific
+dummy_test_key
+dummy_test_key.pub
+*.png
+*.jpg
+
+# Add other key names or patterns if you use them for testing:
+# id_rsa
+# id_ed25519
+# test_ssh_key*
