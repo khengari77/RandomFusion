@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "randomfusion"
+version = "0.1.0"
+description = "Generates unique visual art from cryptographic key fingerprints for enhanced verification."
+authors = ["khengari77 <khengari77@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+packages = [{include = "randomfusion", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pillow = "^11.2.1"
+click = "^8.2.0"
+pytest = "^8.3.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
