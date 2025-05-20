@@ -35,7 +35,8 @@ dummy_test_key
 dummy_test_key.pub
 *.png
 *.jpg
-
+tests/assets/test_key_for_pytest
+# tests/assets/test_key_for_pytest.pub # Commit this one for test reproducibility
 # Add other key names or patterns if you use them for testing:
 # id_rsa
 # id_ed25519
