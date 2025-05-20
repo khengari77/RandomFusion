@@ -140,9 +140,6 @@ def test_get_key_data_invalid_input():
 
 def test_remap_fingerprint():
     input_fp = EXPECTED_FINGERPRINT_SHA256
-    # Expected remapped value for "SHA256:qL7x5Y+7Q8zRbk/yYk6xN8zW3kH9jF0oD7rX5mN6zC0"
-    # echo -n "SHA256:qL7x5Y+7Q8zRbk/yYk6xN8zW3kH9jF0oD7rX5mN6zC0" | sha256sum
-    # ADJUST THIS based on the actual hash:
     expected_remapped = "d0c61f08d04699a6befe964258c375f4a6cc28cc5ba363dfaf1a636e5be6ef92"
     assert remap_fingerprint(input_fp) == expected_remapped
 
