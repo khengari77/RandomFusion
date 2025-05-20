@@ -17,7 +17,9 @@ Currently, RandomFusion crafts a vibrant "Color Blocks Grid" image, with more ar
 *   🌪️ Applies a powerful "avalanche" remapping (SHA256 hashing) to the fingerprint, maximizing visual difference for tiny key changes.
 *   🖼️ Generates a deterministic procedural image ("Color Blocks Grid") based on the remapped data. Each key gets its own unique visual signature!
 *   💻 User-friendly Command-Line Interface (CLI) for easy generation.
-
+*   Generates deterministic procedural images based on the remapped data. Styles include:
+    *   **Color Blocks Grid**
+    *   **Concentric Circles**
 ---
 
 ## ✅ Prerequisites
@@ -73,6 +75,10 @@ randomfusion generate <KEY_INPUT> [OPTIONS]
 *   `--height INTEGER`: Desired height of your art in pixels. (Default: `256`)
 *   `--grid-size INTEGER`: For the "Color Blocks" visual, this sets the number of blocks per row/column. (Default: `8`)
 *   `--help`: Reveals more command secrets and options.
+*   `--style TEXT`: Visual style to generate. (Choices: `color_blocks`, `circles`; Default: `color_blocks`)
+*   `--grid-size INTEGER`: [Style: color_blocks] Number of blocks per row/column. (Default: `8`)
+*   `--num-circles INTEGER`: [Style: circles] Override the seed-derived number of circles.
+*   `--base-stroke INTEGER`: [Style: circles] Override the seed-derived base stroke width for circles.
 
 **Example Incantations:**
 
@@ -91,6 +97,10 @@ randomfusion generate <KEY_INPUT> [OPTIONS]
     ```bash
     randomfusion --help
     randomfusion generate --help
+    ```
+4.  **Generate "Concentric Circles" style:**
+    ```bash
+    randomfusion generate your_key_input --style circles -o my_circles.png
     ```
 
 ---
