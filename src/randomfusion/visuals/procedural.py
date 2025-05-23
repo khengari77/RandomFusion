@@ -290,3 +290,98 @@ def generate_noisescape(
             image.putpixel((x_coord, y_coord), (r, g, b))
             
     return image
+
+def generate_mandelbrot(
+    seed_hex_string: str,
+    image_width: int = 256,
+    image_height: int = 256
+) -> Image.Image:
+    if not seed_hex_string:
+        raise ValueError("Seed hex string cannot be empty.")
+
+    current_seed_pos = 0
+    seed_len = len(seed_hex_string)
+
+    def get_chunk(length: int) -> str:
+        nonlocal current_seed_pos
+        if seed_len == 0: return "0" * length
+        chunk_parts = []
+        temp_pos_for_chunk = current_seed_pos
+        for _ in range(length):
+            chunk_parts.append(seed_hex_string[temp_pos_for_chunk % seed_len])
+            temp_pos_for_chunk += 1
+        current_seed_pos += length
+        return "".join(chunk_parts)
+
+    # --- Mandelbrot Parameters from Seed ---
+    # Max iterations
+    max_iterations = _map_hex_to_range(get_chunk(2), 50, 255, is_int=True) # e.g., 50-255 iterations
+
+    # Zoom level and center offset
+    # A smaller 'view_width_complex' means more zoom.
+    # Typical Mandelbrot view is roughly x in [-2.0, 1.0], y in [-1.5, 1.5]
+    # Let's define a base view width in the complex plane, e.g., 3.0
+    # And then apply a zoom factor derived from the seed.
+    base_view_width_complex = 3.0
+    zoom_factor = _map_hex_to_range(get_chunk(2), 0.2, 5.0) # zoom_factor < 1 zooms in, > 1 zooms out
+    view_width_complex = base_view_width_complex / zoom_factor
+
+    # Center offset from a typical Mandelbrot point like (-0.75, 0.0)
+    # These offsets are small adjustments.
+    center_x_offset = _map_hex_to_range(get_chunk(2), -0.5, 0.5)
+    center_y_offset = _map_hex_to_range(get_chunk(2), -0.5, 0.5)
+    
+    mandel_center_real = -0.75 + center_x_offset
+    mandel_center_imag = 0.0 + center_y_offset
+
+    # Calculate viewing window in the complex plane
+    aspect_ratio = image_width / image_height
+    view_height_complex = view_width_complex / aspect_ratio
+    
+    x_min_complex = mandel_center_real - view_width_complex / 2.0
+    x_max_complex = mandel_center_real + view_width_complex / 2.0
+    y_min_complex = mandel_center_imag - view_height_complex / 2.0
+    y_max_complex = mandel_center_imag + view_height_complex / 2.0
+
+    # Color Palette (derive 3 colors from seed)
+    palette_size = 3
+    color_palette = []
+    for _ in range(palette_size):
+        color_palette.append(hex_to_rgb(get_chunk(6)))
+    
+    inside_color = (0, 0, 0) # Black for points inside the set
+
+    # --- Image Generation ---
+    image = Image.new("RGB", (image_width, image_height))
+    pixels = image.load() # For faster pixel access
+
+    for py in range(image_height):
+        for px in range(image_width):
+            # Map pixel coordinate (px, py) to complex number (c_real, c_imag)
+            # c_real = x_min_complex + (px / image_width) * (x_max_complex - x_min_complex)
+            # c_imag = y_min_complex + (py / image_height) * (y_max_complex - y_min_complex)
+            # Corrected mapping (y is often inverted in image coords vs. math coords)
+            c_real = x_min_complex + (px / (image_width -1 if image_width > 1 else 1)) * view_width_complex
+            c_imag = y_max_complex - (py / (image_height-1 if image_height > 1 else 1)) * view_height_complex
+
+
+            z_real = 0.0
+            z_imag = 0.0
+            iteration = 0
+
+            while z_real * z_real + z_imag * z_imag <= 4.0 and iteration < max_iterations:
+                # z_new = z*z + c
+                # (z_real + z_imag*i)^2 = z_real^2 - z_imag^2 + 2*z_real*z_imag*i
+                z_real_temp = z_real * z_real - z_imag * z_imag + c_real
+                z_imag = 2 * z_real * z_imag + c_imag
+                z_real = z_real_temp
+                iteration += 1
+            
+            if iteration == max_iterations:
+                pixels[px, py] = inside_color
+            else:
+                # Color based on escape iteration
+                color_index = iteration % palette_size
+                pixels[px, py] = color_palette[color_index]
+                
+    return image

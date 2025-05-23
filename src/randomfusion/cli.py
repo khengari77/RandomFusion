@@ -1,14 +1,20 @@
 import click
 from .core import get_key_data, remap_fingerprint
 # Update imports from visuals
-from .visuals.procedural import generate_color_blocks, generate_concentric_circles, generate_noisescape 
+from .visuals.procedural import (
+        generate_color_blocks, 
+        generate_concentric_circles, 
+        generate_noisescape,
+        generate_mandelbrot
+    )
 from PIL import Image
 
 # Define available visual styles
 VISUAL_STYLES = {
     "color_blocks": generate_color_blocks,
     "circles": generate_concentric_circles,
-    "noisescape": generate_noisescape
+    "noisescape": generate_noisescape,
+    "mandelbrot": generate_mandelbrot
 }
 
 @click.group()

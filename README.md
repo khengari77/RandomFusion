@@ -32,7 +32,8 @@ You can add arguments to customize the image (see "Usage" section below). Try ch
     *   **Color Blocks Grid**
     *   **Concentric Circles**
     *   **NoiseScape** (Abstract Perlin noise patterns)
-
+    *   **Mandelbrot Fractal** (Classic fractal art)
+    *   **More to come!**
 ---
 
 ## ✅ Prerequisites
@@ -88,7 +89,7 @@ randomfusion generate <KEY_INPUT> [OPTIONS]
 *   `--height INTEGER`: Desired height of your art in pixels. (Default: `256`)
 *   `--grid-size INTEGER`: For the "Color Blocks" visual, this sets the number of blocks per row/column. (Default: `8`)
 *   `--help`: Reveals more command secrets and options.
-*   `--style TEXT`: Visual style to generate. (Choices: `color_blocks`, `circles`, `noisescape`; Default: `color_blocks`)
+*   `--style TEXT`: Visual style to generate. (Choices: `color_blocks`, `circles`, `noisescape`, `mandelbrot`; Default: `color_blocks`)
 *   `--grid-size INTEGER`: [Style: color_blocks] Number of blocks per row/column. (Default: `8`)
 *   `--num-circles INTEGER`: [Style: circles] Override the seed-derived number of circles.
 *   `--base-stroke INTEGER`: [Style: circles] Override the seed-derived base stroke width for circles.
@@ -118,6 +119,10 @@ randomfusion generate <KEY_INPUT> [OPTIONS]
 5.  **Generate "NoiseScape" style:**
     ```bash
     randomfusion generate your_key_input --style noisescape -o my_noisescape.png
+    ```
+6.  **Generate "Mandelbrot" style:**
+    ```bash
+    randomfusion generate your_key_input --style mandelbrot -o my_mandelbrot.png
     ```
 ---
 
