@@ -8,6 +8,17 @@ If even a single bit changes in an input key, RandomFusion's internal "avalanche
 
 Currently, RandomFusion crafts a vibrant "Color Blocks Grid" image, with more art styles planned for the future!
 
+**🚀 Wanna try it yourself? Quick Start! 🚀**
+
+Assuming you've followed the installation steps below, jump right in with this command in your terminal (from the project directory):
+
+```bash
+poetry run randomfusion generate "MD5:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00"
+```
+This will generate `randomfusion_output.png` using default settings.
+
+You can add arguments to customize the image (see "Usage" section below). Try changing just one character in the fingerprint string (e.g., `...ee:ff:00` to `...ee:ff:01`) and re-run to see how vastly different the output image becomes!
+
 ---
 
 ## 🚀 Features (Current MVP)
@@ -20,6 +31,8 @@ Currently, RandomFusion crafts a vibrant "Color Blocks Grid" image, with more ar
 *   Generates deterministic procedural images based on the remapped data. Styles include:
     *   **Color Blocks Grid**
     *   **Concentric Circles**
+    *   **NoiseScape** (Abstract Perlin noise patterns)
+
 ---
 
 ## ✅ Prerequisites
@@ -75,7 +88,7 @@ randomfusion generate <KEY_INPUT> [OPTIONS]
 *   `--height INTEGER`: Desired height of your art in pixels. (Default: `256`)
 *   `--grid-size INTEGER`: For the "Color Blocks" visual, this sets the number of blocks per row/column. (Default: `8`)
 *   `--help`: Reveals more command secrets and options.
-*   `--style TEXT`: Visual style to generate. (Choices: `color_blocks`, `circles`; Default: `color_blocks`)
+*   `--style TEXT`: Visual style to generate. (Choices: `color_blocks`, `circles`, `noisescape`; Default: `color_blocks`)
 *   `--grid-size INTEGER`: [Style: color_blocks] Number of blocks per row/column. (Default: `8`)
 *   `--num-circles INTEGER`: [Style: circles] Override the seed-derived number of circles.
 *   `--base-stroke INTEGER`: [Style: circles] Override the seed-derived base stroke width for circles.
@@ -102,7 +115,10 @@ randomfusion generate <KEY_INPUT> [OPTIONS]
     ```bash
     randomfusion generate your_key_input --style circles -o my_circles.png
     ```
-
+5.  **Generate "NoiseScape" style:**
+    ```bash
+    randomfusion generate your_key_input --style noisescape -o my_noisescape.png
+    ```
 ---
 
 ## 🧑‍💻 For Developers
@@ -130,3 +146,4 @@ The journey has just begun! Here's a glimpse of what could be:
 ## 📜 License
 
 This project is licensed under the MIT License - see the `LICENSE` file for full details. (You'll need to add a `LICENSE` file if you decide on one, e.g., MIT).
+

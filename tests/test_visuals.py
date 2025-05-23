@@ -10,7 +10,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from randomfusion.visuals.procedural import (
         hex_to_rgb,
         generate_color_blocks,
-        generate_concentric_circles
+        generate_concentric_circles,
+        generate_noisescape
 )
 
 def test_hex_to_rgb_valid():
@@ -146,3 +147,39 @@ def test_generate_concentric_circles_param_override_effect():
         assert diff2.getbbox() is not None, "Overriding base_stroke did not change the image as expected"
     else:
         print("Warning: Overriding base_stroke resulted in the same image, possibly coincidental seed derivation.")
+
+
+def test_generate_noisescape_runs():
+    seed = "c0ffee1234567890" * 4  # 64 chars
+    img = generate_noisescape(seed_hex_string=seed, image_width=32, image_height=32)
+    assert isinstance(img, Image.Image)
+    assert img.size == (32, 32)
+
+def test_generate_noisescape_empty_seed():
+    with pytest.raises(ValueError, match="Seed hex string cannot be empty"):
+        generate_noisescape(seed_hex_string="")
+
+def test_generate_noisescape_determinism():
+    seed1 = "deadbeefcafebabe" * 4  # 64 chars
+    
+    img1_params = {"seed_hex_string": seed1, "image_width": 24, "image_height": 24} # Smaller for faster test
+    img1 = generate_noisescape(**img1_params)
+    img2 = generate_noisescape(**img1_params) # Same seed and params
+
+    diff = ImageChops.difference(img1, img2)
+    if diff.getbbox() is not None: # pragma: no cover (for local debugging if determinism fails)
+        try:
+            img1.save("debug_noisescape_img1.png")
+            img2.save("debug_noisescape_img2.png")
+            diff.save("debug_noisescape_diff.png")
+            print("NoiseScape determinism failed. Debug images saved.")
+        except Exception as e:
+            print(f"Could not save debug images for NoiseScape: {e}")
+    assert diff.getbbox() is None, "NoiseScape: Images from same seed and params are not identical"
+
+    # Ensure different seeds produce different images
+    seed2 = "1234567890abcdef" * 4
+    img3_params = {"seed_hex_string": seed2, "image_width": 24, "image_height": 24}
+    img3 = generate_noisescape(**img3_params)
+    diff_different_seed = ImageChops.difference(img1, img3)
+    assert diff_different_seed.getbbox() is not None, "NoiseScape: Images from different seeds are identical"

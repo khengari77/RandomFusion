@@ -1,15 +1,19 @@
 from PIL import Image, ImageDraw
 import hashlib
+import noise as perlin_noise
 
 def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
     """Converts a 6-character hex color string (e.g., 'FF0000') to an RGB tuple."""
     hex_color = hex_color.lstrip('#')
     if len(hex_color) != 6:
-        # Fallback for unexpected length, could make it more robust
-        # e.g., by padding or truncating, or deriving from a hash
+        # Fallback: hash the input, take first 6 hex of hash
         h = hashlib.sha256(hex_color.encode()).hexdigest()[:6]
         return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    try:
+        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    except ValueError: # Handle if hex_color still not valid hex after trying
+        h = hashlib.sha256(b"default_color_fallback").hexdigest()[:6] # a fixed fallback
+        return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
 def generate_color_blocks(
     seed_hex_string: str,
@@ -184,4 +188,105 @@ def generate_concentric_circles(
         # This might be simpler than managing stroke widths for very thin circles.
         # For now, using outline.
 
+    return image
+
+
+# --- Helper Functions (can be module-level or moved to utils.py later) ---
+def _map_hex_to_range(hex_chunk: str, min_val: float, max_val: float, is_int: bool = False) -> float | int:
+    """
+    Helper: Maps a hex string chunk to a value within a given range.
+    Assumes hex_chunk represents a number whose max value corresponds to all 'F's.
+    e.g., 'F' (1 char) -> max 15. 'FF' (2 chars) -> max 255.
+    """
+    if not hex_chunk:
+        raw_val = 0
+        max_raw_val = 1 # Avoid division by zero if hex_chunk was empty
+    else:
+        try:
+            raw_val = int(hex_chunk, 16)
+        except ValueError:
+            raw_val = 0 # Fallback if not a valid hex
+        max_raw_val = 16**len(hex_chunk) -1 # Max value for this many hex digits (e.g., FF = 255)
+        if max_raw_val <= 0: max_raw_val = 1 # Ensure positive divisor
+
+    normalized_val = raw_val / float(max_raw_val) if max_raw_val > 0 else 0.0
+    result = min_val + normalized_val * (max_val - min_val)
+    return int(round(result)) if is_int else result
+
+def generate_noisescape(
+    seed_hex_string: str,
+    image_width: int = 256,
+    image_height: int = 256
+) -> Image.Image:
+    if not seed_hex_string:
+        raise ValueError("Seed hex string cannot be empty.")
+
+    current_seed_pos = 0
+    seed_len = len(seed_hex_string)
+
+    def get_chunk(length: int) -> str:
+        nonlocal current_seed_pos
+        if seed_len == 0: return "0" * length
+
+        # Cycle through seed if necessary for this chunk, but advance overall position
+        # This ensures different parameters get different "views" of the seed.
+        chunk_parts = []
+        temp_pos_for_chunk = current_seed_pos
+        for _ in range(length):
+            chunk_parts.append(seed_hex_string[temp_pos_for_chunk % seed_len])
+            temp_pos_for_chunk += 1
+        
+        current_seed_pos += length # Advance overall consumption counter by requested length
+        return "".join(chunk_parts)
+
+    # Noise parameters
+    scale = _map_hex_to_range(get_chunk(2), 30.0, 120.0)  # smaller = more "zoomed in" / finer detail
+    octaves = _map_hex_to_range(get_chunk(1), 2, 6, is_int=True) # Use 1 hex char for 0-15 range, map to 2-6
+    persistence = _map_hex_to_range(get_chunk(2), 0.3, 0.7)
+    lacunarity = _map_hex_to_range(get_chunk(2), 1.8, 3.5)
+    
+    hashed_seed_for_noise_lib = hashlib.sha256(seed_hex_string.encode()).hexdigest()
+    noise_base_seed = int(hashed_seed_for_noise_lib[:4], 16) % 256 # For noise library's 'base'
+
+    # Gradient colors
+    color1_hex = get_chunk(6)
+    color1 = hex_to_rgb(color1_hex)
+    color2_hex = get_chunk(6)
+    color2 = hex_to_rgb(color2_hex)
+    
+    image = Image.new("RGB", (image_width, image_height))
+
+    for y_coord in range(image_height):
+        for x_coord in range(image_width):
+            # Map pixel coordinates to noise input coordinates
+            nx = x_coord / scale
+            ny = y_coord / scale
+            
+            noise_val = perlin_noise.pnoise2(
+                nx, ny,
+                octaves=octaves,
+                persistence=persistence,
+                lacunarity=lacunarity,
+                # Ensure repeat values are larger than the extent of normalized coordinates
+                # to avoid obvious tiling within the image for the given scale.
+                repeatx=int(image_width / scale * 1.2) + 2, 
+                repeaty=int(image_height / scale * 1.2) + 2,
+                base=noise_base_seed
+            )
+
+            # Normalize noise_val from pnoise2's typical range (approx -0.7 to 0.7) to [0, 1]
+            norm_noise = (noise_val + 0.7) / 1.4 
+            norm_noise = max(0.0, min(1.0, norm_noise)) # Clamp
+
+            # Linear interpolation for color
+            r = int(color1[0] * (1.0 - norm_noise) + color2[0] * norm_noise)
+            g = int(color1[1] * (1.0 - norm_noise) + color2[1] * norm_noise)
+            b = int(color1[2] * (1.0 - norm_noise) + color2[2] * norm_noise)
+            
+            r = max(0, min(255, r))
+            g = max(0, min(255, g))
+            b = max(0, min(255, b))
+
+            image.putpixel((x_coord, y_coord), (r, g, b))
+            
     return image

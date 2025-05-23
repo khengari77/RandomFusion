@@ -1,9 +1,10 @@
 # Project specific
 ProjectPlan.md
+Prompt.md
 
 # Poetry
 .poetry/
-poetry.lock # Often committed, but some prefer to ignore if all devs use `poetry install`
+poetry.lock
 dist/
 build/
 
